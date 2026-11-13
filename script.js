@@ -55,10 +55,30 @@ KEYS.forEach((item) => {
 // 4. Press and release (shared by keyboard and mouse)
 function pressKey(pitch) {
   keyElements[pitch].classList.add("active");
+  playTone(pitch);
 }
 
 function releaseKey(pitch) {
   keyElements[pitch].classList.remove("active");
+}
+
+// 6. Audio
+
+const audio = new AudioContext();
+const NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const midiOf = (pitch) => (Number(pitch.slice(-1)) + 1) * 12 + NAMES.indexOf(pitch.slice(0, -1));
+
+function playTone(pitch) {
+  if (audio.state === "suspended") audio.resume(); // the first time we play a tone, the audio context is suspended and needs to be resumed by user interaction
+  const osc = audio.createOscillator();
+  const gain = audio.createGain();
+  osc.type = "triangle";
+  osc.frequency.value = 440 * 2 ** ((midiOf(pitch) - 69) / 12);
+  gain.gain.setValueAtTime(0.3, audio.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 1);
+  osc.connect(gain).connect(audio.destination);
+  osc.start();
+  osc.stop(audio.currentTime + 1);
 }
 
 // 5. Keyboard events
@@ -73,3 +93,5 @@ document.addEventListener("keyup", (event) => {
   const pitch = KEY_TO_PITCH[event.code];
   if (pitch) releaseKey(pitch);
 });
+
+// 
