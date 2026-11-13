@@ -78,7 +78,7 @@ function playTone(pitch) {
   gain.gain.setValueAtTime(0.0001, audio.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.3, audio.currentTime + 0.01); // quick fade in
   gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 1); //fade out
-  
+
   osc.connect(gain).connect(audio.destination);
   osc.start();
   osc.stop(audio.currentTime + 1);
@@ -97,4 +97,71 @@ document.addEventListener("keyup", (event) => {
   if (pitch) releaseKey(pitch);
 });
 
-// 
+// Songs 
+
+const SONGS = [
+  {
+    id: "twinkle",
+    title: "Twinkle, Twinkle, Little Star",
+    composer: "Traditional",
+    bpm: 90,
+    notes: [
+      { pitch: "C4", beats: 1 }, { pitch: "C4", beats: 1 }, { pitch: "G4", beats: 1 }, { pitch: "G4", beats: 1 },
+      { pitch: "A4", beats: 1 }, { pitch: "A4", beats: 1 }, { pitch: "G4", beats: 2 },
+      { pitch: "F4", beats: 1 }, { pitch: "F4", beats: 1 }, { pitch: "E4", beats: 1 }, { pitch: "E4", beats: 1 },
+      { pitch: "D4", beats: 1 }, { pitch: "D4", beats: 1 }, { pitch: "C4", beats: 2 },
+      { pitch: "G4", beats: 1 }, { pitch: "G4", beats: 1 }, { pitch: "F4", beats: 1 }, { pitch: "F4", beats: 1 },
+      { pitch: "E4", beats: 1 }, { pitch: "E4", beats: 1 }, { pitch: "D4", beats: 2 },
+      { pitch: "G4", beats: 1 }, { pitch: "G4", beats: 1 }, { pitch: "F4", beats: 1 }, { pitch: "F4", beats: 1 },
+      { pitch: "E4", beats: 1 }, { pitch: "E4", beats: 1 }, { pitch: "D4", beats: 2 },
+      { pitch: "C4", beats: 1 }, { pitch: "C4", beats: 1 }, { pitch: "G4", beats: 1 }, { pitch: "G4", beats: 1 },
+      { pitch: "A4", beats: 1 }, { pitch: "A4", beats: 1 }, { pitch: "G4", beats: 2 },
+      { pitch: "F4", beats: 1 }, { pitch: "F4", beats: 1 }, { pitch: "E4", beats: 1 }, { pitch: "E4", beats: 1 },
+      { pitch: "D4", beats: 1 }, { pitch: "D4", beats: 1 }, { pitch: "C4", beats: 2 },
+    ],
+  },
+  {
+    id: "ode-to-joy",
+    title: "Ode to Joy",
+    composer: "Ludwig van Beethoven",
+    bpm: 100,
+    notes: [
+      { pitch: "E4", beats: 1 }, { pitch: "E4", beats: 1 }, { pitch: "F4", beats: 1 }, { pitch: "G4", beats: 1 },
+      { pitch: "G4", beats: 1 }, { pitch: "F4", beats: 1 }, { pitch: "E4", beats: 1 }, { pitch: "D4", beats: 1 },
+      { pitch: "C4", beats: 1 }, { pitch: "C4", beats: 1 }, { pitch: "D4", beats: 1 }, { pitch: "E4", beats: 1 },
+      { pitch: "E4", beats: 1.5 }, { pitch: "D4", beats: 0.5 }, { pitch: "D4", beats: 2 },
+      { pitch: "E4", beats: 1 }, { pitch: "E4", beats: 1 }, { pitch: "F4", beats: 1 }, { pitch: "G4", beats: 1 },
+      { pitch: "G4", beats: 1 }, { pitch: "F4", beats: 1 }, { pitch: "E4", beats: 1 }, { pitch: "D4", beats: 1 },
+      { pitch: "C4", beats: 1 }, { pitch: "C4", beats: 1 }, { pitch: "D4", beats: 1 }, { pitch: "E4", beats: 1 },
+      { pitch: "D4", beats: 1.5 }, { pitch: "C4", beats: 0.5 }, { pitch: "C4", beats: 2 },
+    ],
+  },
+  {
+    id: "fur-elise",
+    title: "Für Elise (opening theme)",
+    composer: "Ludwig van Beethoven",
+    bpm: 60,
+    notes: [
+      { pitch: "E5", beats: 0.25 }, { pitch: "D#5", beats: 0.25 },
+      { pitch: "E5", beats: 0.25 }, { pitch: "D#5", beats: 0.25 }, { pitch: "E5", beats: 0.25 },
+      { pitch: "B4", beats: 0.25 }, { pitch: "D5", beats: 0.25 }, { pitch: "C5", beats: 0.25 },
+      { pitch: "A4", beats: 0.75 }, { pitch: "C4", beats: 0.25 }, { pitch: "E4", beats: 0.25 }, { pitch: "A4", beats: 0.25 },
+      { pitch: "B4", beats: 0.75 }, { pitch: "E4", beats: 0.25 }, { pitch: "G#4", beats: 0.25 }, { pitch: "B4", beats: 0.25 },
+      { pitch: "C5", beats: 0.75 }, { pitch: "E4", beats: 0.25 }, { pitch: "E5", beats: 0.25 }, { pitch: "D#5", beats: 0.25 },
+      { pitch: "E5", beats: 0.25 }, { pitch: "D#5", beats: 0.25 }, { pitch: "E5", beats: 0.25 },
+      { pitch: "B4", beats: 0.25 }, { pitch: "D5", beats: 0.25 }, { pitch: "C5", beats: 0.25 },
+      { pitch: "A4", beats: 0.75 }, { pitch: "C4", beats: 0.25 }, { pitch: "E4", beats: 0.25 }, { pitch: "A4", beats: 0.25 },
+      { pitch: "B4", beats: 0.75 }, { pitch: "E4", beats: 0.25 }, { pitch: "C5", beats: 0.25 }, { pitch: "B4", beats: 0.25 },
+      { pitch: "A4", beats: 1.5 },
+    ],
+  },
+];
+
+function withStartBeats(notes) {
+  let beat = 0;
+  return notes.map((note) => {
+    const timed = { ...note, start: beat };
+    beat += note.beats;
+    return timed;
+  });
+}
