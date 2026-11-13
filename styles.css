@@ -40,3 +40,6 @@
   color: white;
   z-index: 1;
 }
+
+.white.active { background: #8ecae6; }
+.black.active { background: #219ebc; }
