@@ -43,3 +43,6 @@
 
 .white.active { background: #8ecae6; }
 .black.active { background: #219ebc; }
+
+.hidden { display: none; }
+

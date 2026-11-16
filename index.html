@@ -7,9 +7,23 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <section id="menu" class="screen">
     <h1>Piano Trainer</h1>
-    <p>Welcome to the Piano Trainer!</p>
+    <p>Choose a song or play freely.</p>
+    <div id="song-list"></div>
+    <button id="free-play-btn">Free play</button>
+    </section>
+
+    <section id="game" class="screen">
+    <div class="hud">
+        <span id="song-title"></span>
+        <span id="progress"></span>
+        <span id="misses"></span>
+    </div>
+    <button id="back-btn">Back to menu</button>
+    <div class="lane"></div>
     <div class="piano"></div>
+    </section>
 
     <script src="script.js"></script>
 

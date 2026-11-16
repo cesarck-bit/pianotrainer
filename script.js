@@ -97,7 +97,7 @@ document.addEventListener("keyup", (event) => {
   if (pitch) releaseKey(pitch);
 });
 
-// Songs 
+// 7. Songs
 
 const SONGS = [
   {
@@ -165,3 +165,42 @@ function withStartBeats(notes) {
     return timed;
   });
 }
+
+// Menu and modes
+const songList = document.getElementById("song-list");
+const hud = document.querySelector(".hud");
+let currentSong = null;
+
+SONGS.forEach((song) => {
+  const button = document.createElement("button");
+  button.textContent = `${song.title} (${song.composer})`;
+  button.addEventListener("click", () => startSong(song));
+  songList.appendChild(button);
+});
+
+function startSong(song) {
+  currentSong = { ...song, notes: withStartBeats(song.notes) };
+  document.getElementById("song-title").textContent = song.title;
+  document.getElementById("progress").textContent = `0 / ${currentSong.notes.length}`;
+  document.getElementById("misses").textContent = "Misses: 0";
+  hud.classList.remove("hidden");
+  showScreen("game");
+}
+
+function startFreePlay() {
+  currentSong = null;
+  hud.classList.add("hidden");
+  showScreen("game");
+}
+
+document.getElementById("free-play-btn").addEventListener("click", startFreePlay);
+document.getElementById("back-btn").addEventListener("click", () => showScreen("menu"));
+
+function showScreen(name) {
+  document.querySelectorAll(".screen").forEach((screen) => {
+    screen.classList.add("hidden");
+  });
+  document.getElementById(name).classList.remove("hidden");
+}
+
+showScreen("menu");
