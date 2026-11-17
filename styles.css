@@ -7,7 +7,7 @@
   position: relative;
   display: flex;
   height: 200px;
-  margin: 40px auto;
+  margin: 0 auto 40px;
   width: fit-content;
 }
 
@@ -46,3 +46,19 @@
 
 .hidden { display: none; }
 
+.lane {
+  position: relative;
+  width: calc(10 * var(--white-width));
+  height: 400px;
+  margin: 20px auto 0;
+  overflow: hidden;
+  background: #1d1d2b;
+  border-bottom: 3px solid #e63946; /* hit line */
+}
+
+.note-block {
+  position: absolute;
+  top: 0;
+  border-radius: 4px;
+  background: #ffb703;
+}

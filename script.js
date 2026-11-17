@@ -166,6 +166,75 @@ function withStartBeats(notes) {
   });
 }
 
+// Falling notes
+const PX_PER_BEAT = 120;
+const LEAD_IN_BEATS = 3; // empty beats before the first note reaches the line
+const lane = document.querySelector(".lane");
+let noteBlocks = [];
+let hitY = 0;
+let songBeat = 0;
+let nextIndex = 0;
+let lastTime = null;
+let playing = false;
+let rafId = null;
+
+function blockHeight(note) {
+  return note.beats * PX_PER_BEAT - 4; // small gap between consecutive notes
+}
+
+function placeInColumn(block, pitch) {
+  const key = keyElements[pitch];
+  block.style.left = `${key.offsetLeft}px`;
+  block.style.width = `${key.offsetWidth}px`;
+}
+
+function createBlocks() {
+  lane.innerHTML = "";
+  hitY = lane.clientHeight;
+  noteBlocks = currentSong.notes.map((note) => {
+    const block = document.createElement("div");
+    block.classList.add("note-block");
+    block.style.height = `${blockHeight(note)}px`;
+    placeInColumn(block, note.pitch);
+    lane.appendChild(block);
+    return block;
+  });
+}
+
+function draw() {
+  currentSong.notes.forEach((note, i) => {
+    const bottom = hitY - (note.start - songBeat) * PX_PER_BEAT;
+    const top = bottom - blockHeight(note);
+    noteBlocks[i].style.transform = `translateY(${top}px)`;
+  });
+}
+
+function frame(now) {
+  if (lastTime !== null) {
+    const seconds = Math.min((now - lastTime) / 1000, 0.1);
+    songBeat += seconds * (currentSong.bpm / 60);
+    const next = currentSong.notes[nextIndex];
+    if (next && songBeat >= next.start) songBeat = next.start; // wait at the line
+  }
+  lastTime = now;
+  draw();
+  if (playing) rafId = requestAnimationFrame(frame);
+}
+
+function startLoop() {
+  stopLoop();
+  songBeat = -LEAD_IN_BEATS;
+  nextIndex = 0;
+  lastTime = null;
+  playing = true;
+  rafId = requestAnimationFrame(frame);
+}
+
+function stopLoop() {
+  playing = false;
+  cancelAnimationFrame(rafId);
+}
+
 // Menu and modes
 const songList = document.getElementById("song-list");
 const hud = document.querySelector(".hud");
@@ -184,17 +253,25 @@ function startSong(song) {
   document.getElementById("progress").textContent = `0 / ${currentSong.notes.length}`;
   document.getElementById("misses").textContent = "Misses: 0";
   hud.classList.remove("hidden");
-  showScreen("game");
+  lane.classList.remove("hidden");
+  showScreen("game");  // must come BEFORE createBlocks
+  createBlocks();
+  startLoop();
 }
 
 function startFreePlay() {
+  stopLoop();
   currentSong = null;
   hud.classList.add("hidden");
+  lane.classList.add("hidden");
   showScreen("game");
 }
 
 document.getElementById("free-play-btn").addEventListener("click", startFreePlay);
-document.getElementById("back-btn").addEventListener("click", () => showScreen("menu"));
+document.getElementById("back-btn").addEventListener("click", () => {
+  stopLoop();
+  showScreen("menu");
+});
 
 function showScreen(name) {
   document.querySelectorAll(".screen").forEach((screen) => {
