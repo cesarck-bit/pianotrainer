@@ -44,6 +44,9 @@
 .white.active { background: #8ecae6; }
 .black.active { background: #219ebc; }
 
+.key.wrong { background: #e63946; }
+.lane.waiting { border-bottom-color: #ffb703; }
+
 .hidden { display: none; }
 
 .lane {

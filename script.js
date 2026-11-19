@@ -56,6 +56,7 @@ KEYS.forEach((item) => {
 function pressKey(pitch) {
   keyElements[pitch].classList.add("active");
   playTone(pitch);
+  if (currentSong && playing) checkNote(pitch);
 }
 
 function releaseKey(pitch) {
@@ -177,6 +178,7 @@ let nextIndex = 0;
 let lastTime = null;
 let playing = false;
 let rafId = null;
+let misses = 0;
 
 function blockHeight(note) {
   return note.beats * PX_PER_BEAT - 4; // small gap between consecutive notes
@@ -214,7 +216,9 @@ function frame(now) {
     const seconds = Math.min((now - lastTime) / 1000, 0.1);
     songBeat += seconds * (currentSong.bpm / 60);
     const next = currentSong.notes[nextIndex];
-    if (next && songBeat >= next.start) songBeat = next.start; // wait at the line
+    const waiting = next && songBeat >= next.start;
+    if (waiting) songBeat = next.start; // wait at the line
+    lane.classList.toggle("waiting", Boolean(waiting));
   }
   lastTime = now;
   draw();
@@ -235,6 +239,40 @@ function stopLoop() {
   cancelAnimationFrame(rafId);
 }
 
+function checkNote(pitch) {
+  const next = currentSong.notes[nextIndex];
+  if (!next || songBeat < next.start) return; // not at the line yet: play freely
+  if (pitch === next.pitch) hitNote();
+  else missNote(pitch);
+}
+
+function hitNote() {
+  noteBlocks[nextIndex].classList.add("hidden");
+  nextIndex++;
+  updateHud();
+  if (nextIndex === currentSong.notes.length) finishSong();
+}
+
+function missNote(pitch) {
+  misses++;
+  updateHud();
+  const key = keyElements[pitch];
+  key.classList.add("wrong");
+  setTimeout(() => key.classList.remove("wrong"), 300);
+}
+
+function updateHud() {
+  document.getElementById("progress").textContent = `${nextIndex} / ${currentSong.notes.length}`;
+  document.getElementById("misses").textContent = `Misses: ${misses}`;
+}
+
+function finishSong() {
+  stopLoop();
+  document.getElementById("results-text").textContent =
+    `${currentSong.title}: ${currentSong.notes.length} notes, ${misses} misses.`;
+  showScreen("results");
+}
+
 // Menu and modes
 const songList = document.getElementById("song-list");
 const hud = document.querySelector(".hud");
@@ -247,16 +285,19 @@ SONGS.forEach((song) => {
   songList.appendChild(button);
 });
 
+let lastSong = null;
+
 function startSong(song) {
+  lastSong = song;
   currentSong = { ...song, notes: withStartBeats(song.notes) };
+  misses = 0;
   document.getElementById("song-title").textContent = song.title;
-  document.getElementById("progress").textContent = `0 / ${currentSong.notes.length}`;
-  document.getElementById("misses").textContent = "Misses: 0";
   hud.classList.remove("hidden");
   lane.classList.remove("hidden");
   showScreen("game");  // must come BEFORE createBlocks
   createBlocks();
   startLoop();
+  updateHud();
 }
 
 function startFreePlay() {
@@ -267,11 +308,14 @@ function startFreePlay() {
   showScreen("game");
 }
 
+
 document.getElementById("free-play-btn").addEventListener("click", startFreePlay);
 document.getElementById("back-btn").addEventListener("click", () => {
   stopLoop();
   showScreen("menu");
 });
+document.getElementById("play-again-btn").addEventListener("click", () => startSong(lastSong));
+document.getElementById("results-menu-btn").addEventListener("click", () => showScreen("menu"));
 
 function showScreen(name) {
   document.querySelectorAll(".screen").forEach((screen) => {
