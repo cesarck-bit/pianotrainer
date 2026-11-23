@@ -1,4 +1,6 @@
-// 1. Key data
+// 1. Data: keys, key map and songs
+//    KEYS, KEY_TO_PITCH, SONGS, withStartBeats
+
 const KEYS = [
   { note: "C4",  type: "white", letter: "A" },
   { note: "C#4", type: "black", letter: "W" },
@@ -19,86 +21,12 @@ const KEYS = [
   { note: "E5",  type: "white", letter: ";" },
 ];
 
-// 2. Physical key -> note
 const KEY_TO_PITCH = {
   KeyA: "C4", KeyW: "C#4", KeyS: "D4", KeyE: "D#4", KeyD: "E4",
   KeyF: "F4", KeyT: "F#4", KeyG: "G4", KeyY: "G#4", KeyH: "A4",
   KeyU: "A#4", KeyJ: "B4", KeyK: "C5", KeyO: "C#5", KeyL: "D5",
   KeyP: "D#5", Semicolon: "E5",
 };
-
-// 3. Draw the keys
-const pianoContainer = document.querySelector(".piano");
-const keyElements = {};
-let whiteCount = 0;
-
-KEYS.forEach((item) => {
-  const element = document.createElement("div");
-  element.classList.add("key", item.type);
-  element.dataset.note = item.note;
-  element.textContent = item.letter;
-
-  if (item.type === "white") {
-    whiteCount++;
-  } else {
-    element.style.setProperty("--white-index", whiteCount);
-  }
-
-  element.addEventListener("mousedown", () => pressKey(item.note));
-  element.addEventListener("mouseup", () => releaseKey(item.note));
-  element.addEventListener("mouseleave", () => releaseKey(item.note));
-
-  keyElements[item.note] = element;
-  pianoContainer.appendChild(element);
-});
-
-// 4. Press and release (shared by keyboard and mouse)
-function pressKey(pitch) {
-  keyElements[pitch].classList.add("active");
-  playTone(pitch);
-  if (currentSong && playing) checkNote(pitch);
-}
-
-function releaseKey(pitch) {
-  keyElements[pitch].classList.remove("active");
-}
-
-// 6. Audio
-
-const audio = new AudioContext();
-const NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-const midiOf = (pitch) => (Number(pitch.slice(-1)) + 1) * 12 + NAMES.indexOf(pitch.slice(0, -1));
-
-function playTone(pitch) {
-  if (audio.state === "suspended") audio.resume(); // browser blocks audio until user interaction
-  const osc = audio.createOscillator();
-  const gain = audio.createGain();
-  osc.type = "triangle";
-  osc.frequency.value = 440 * 2 ** ((midiOf(pitch) - 69) / 12);
-
-  gain.gain.setValueAtTime(0.0001, audio.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.3, audio.currentTime + 0.01); // quick fade in
-  gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 1); //fade out
-
-  osc.connect(gain).connect(audio.destination);
-  osc.start();
-  osc.stop(audio.currentTime + 1);
-}
-
-// 5. Keyboard events
-document.addEventListener("keydown", (event) => {
-  if (event.repeat) return;
-  const pitch = KEY_TO_PITCH[event.code];
-  if (!pitch) return;
-  pressKey(pitch);
-});
-
-document.addEventListener("keyup", (event) => {
-  const pitch = KEY_TO_PITCH[event.code];
-  if (pitch) releaseKey(pitch);
-});
-
-// 7. Songs
 
 const SONGS = [
   {
@@ -167,7 +95,86 @@ function withStartBeats(notes) {
   });
 }
 
-// Falling notes
+// 2. Audio
+//    audio, NAMES, midiOf, playTone
+
+const audio = new AudioContext();
+const NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const midiOf = (pitch) => (Number(pitch.slice(-1)) + 1) * 12 + NAMES.indexOf(pitch.slice(0, -1));
+
+function playTone(pitch) {
+  if (audio.state === "suspended") audio.resume(); // browser blocks audio until user interaction
+  const osc = audio.createOscillator();
+  const gain = audio.createGain();
+  osc.type = "triangle";
+  osc.frequency.value = 440 * 2 ** ((midiOf(pitch) - 69) / 12);
+
+  gain.gain.setValueAtTime(0.0001, audio.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.3, audio.currentTime + 0.01); // quick fade in
+  gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 1); //fade out
+
+  osc.connect(gain).connect(audio.destination);
+  osc.start();
+  osc.stop(audio.currentTime + 1);
+}
+
+// 3. Draw the piano
+//    pianoContainer, keyElements, whiteCount, KEYS.forEach
+
+const pianoContainer = document.querySelector(".piano");
+const keyElements = {};
+let whiteCount = 0;
+
+KEYS.forEach((item) => {
+  const element = document.createElement("div");
+  element.classList.add("key", item.type);
+  element.dataset.note = item.note;
+  element.textContent = item.letter;
+
+  if (item.type === "white") {
+    whiteCount++;
+  } else {
+    element.style.setProperty("--white-index", whiteCount);
+  }
+
+  element.addEventListener("mousedown", () => pressKey(item.note));
+  element.addEventListener("mouseup", () => releaseKey(item.note));
+  element.addEventListener("mouseleave", () => releaseKey(item.note));
+
+  keyElements[item.note] = element;
+  pianoContainer.appendChild(element);
+});
+
+// 4. Input (keyboard and mouse share pressKey)
+//    pressKey, releaseKey, keydown, keyup
+
+function pressKey(pitch) {
+  keyElements[pitch].classList.add("active");
+  playTone(pitch);
+  if (currentSong && playing) checkNote(pitch);
+}
+
+function releaseKey(pitch) {
+  keyElements[pitch].classList.remove("active");
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.repeat) return;
+  const pitch = KEY_TO_PITCH[event.code];
+  if (!pitch) return;
+  pressKey(pitch);
+});
+
+document.addEventListener("keyup", (event) => {
+  const pitch = KEY_TO_PITCH[event.code];
+  if (pitch) releaseKey(pitch);
+});
+
+
+// 5. Falling notes
+//    PX_PER_BEAT ... misses, blockHeight, placeInColumn,
+//    createBlocks, draw, frame, startLoop, stopLoop
+
 const PX_PER_BEAT = 120;
 const LEAD_IN_BEATS = 3; // empty beats before the first note reaches the line
 const lane = document.querySelector(".lane");
@@ -239,6 +246,9 @@ function stopLoop() {
   cancelAnimationFrame(rafId);
 }
 
+// 6. Game logic
+//    checkNote, hitNote, missNote, updateHud, finishSong
+
 function checkNote(pitch) {
   const next = currentSong.notes[nextIndex];
   if (!next || songBeat < next.start) return; // not at the line yet: play freely
@@ -273,10 +283,15 @@ function finishSong() {
   showScreen("results");
 }
 
-// Menu and modes
+// 7. Screens and menu
+//    songList, hud, currentSong, lastSong, SONGS.forEach,
+//    startSong, startFreePlay, showScreen, button listeners,
+//    showScreen("menu")
+
 const songList = document.getElementById("song-list");
 const hud = document.querySelector(".hud");
 let currentSong = null;
+let lastSong = null;
 
 SONGS.forEach((song) => {
   const button = document.createElement("button");
@@ -284,8 +299,6 @@ SONGS.forEach((song) => {
   button.addEventListener("click", () => startSong(song));
   songList.appendChild(button);
 });
-
-let lastSong = null;
 
 function startSong(song) {
   lastSong = song;
@@ -308,6 +321,12 @@ function startFreePlay() {
   showScreen("game");
 }
 
+function showScreen(name) {
+  document.querySelectorAll(".screen").forEach((screen) => {
+    screen.classList.add("hidden");
+  });
+  document.getElementById(name).classList.remove("hidden");
+}
 
 document.getElementById("free-play-btn").addEventListener("click", startFreePlay);
 document.getElementById("back-btn").addEventListener("click", () => {
@@ -317,11 +336,6 @@ document.getElementById("back-btn").addEventListener("click", () => {
 document.getElementById("play-again-btn").addEventListener("click", () => startSong(lastSong));
 document.getElementById("results-menu-btn").addEventListener("click", () => showScreen("menu"));
 
-function showScreen(name) {
-  document.querySelectorAll(".screen").forEach((screen) => {
-    screen.classList.add("hidden");
-  });
-  document.getElementById(name).classList.remove("hidden");
-}
+
 
 showScreen("menu");
