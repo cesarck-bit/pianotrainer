@@ -1,31 +1,130 @@
 :root {
-  --white-width: 50px;
-  --black-width: 30px;
+  --white-width: 60px;
+  --black-width: 36px;
+  --white-height: 220px;
+  --black-height: 135px;
+  --bg: #12121c;  
+  --text: #f1f1f1;  
+  --muted: #a0a0b8;  
+  --card: #1f1f2e;  
+  --accent: #ffb703;  
+  --accent-text: #12121c;  
+  --lane-bg: #1d1d2b;  
+  --note: #ffb703;  
+  --hit-line: #e63946;  
+  --white-active: #8ecae6;  
+  --black-active: #219ebc;  
+  --wrong: #e63946;
 }
 
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* Screens */
+.screen {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+h1 { font-size: 2.5rem; margin-bottom: 8px; }
+h2 { font-size: 2rem; margin-bottom: 12px; }
+p  { margin-bottom: 24px; color: var(--muted); }
+
+button {
+  font: inherit;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-text);
+  cursor: pointer;
+}
+
+button:hover { filter: brightness(1.1); }
+
+#song-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 420px;
+  margin: 0 auto 12px;
+}
+
+#song-list button {
+  background: var(--card);
+  color: var(--text);
+  text-align: left;
+  padding: 16px 20px;
+}
+
+#free-play-btn { width: 100%; max-width: 420px; }
+#results button { margin: 0 6px; }
+#back-btn { margin-bottom: 12px; }
+
+.hud {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+}
+
+/* Falling notes */
+.lane {
+  position: relative;
+  width: calc(10 * var(--white-width));
+  height: 400px;
+  margin: 0 auto;
+  overflow: hidden;
+  background: var(--lane-bg);
+  border-bottom: 3px solid var(--hit-line);
+}
+
+.lane.waiting { border-bottom-color: var(--note); }
+
+.note-block {
+  position: absolute;
+  top: 0;
+  border-radius: 4px;
+  background: var(--note);
+}
+
+/* Piano */
 .piano {
   position: relative;
   display: flex;
-  height: 200px;
   margin: 0 auto 40px;
   width: fit-content;
 }
 
 .key {
-  box-sizing: border-box;
   border: 1px solid #333;
-  border-radius: 0 0 5px 5px;
+  border-radius: 0 0 6px 6px;
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 8px;
-  font-family: Arial, sans-serif;
+  flex-direction: column;
+  align-items: center;       /* horizontal: centered */
+  justify-content: flex-end; /* vertical: at the bottom */
+  padding-bottom: 10px;
+  font-weight: bold;
   user-select: none;
+  cursor: pointer;
 }
 
 .white {
   width: var(--white-width);
-  height: 200px;
+  height: var(--white-height);
   background: white;
   color: #333;
 }
@@ -33,35 +132,19 @@
 .black {
   position: absolute;
   top: 0;
-  left: calc(var(--white-width) * var(--white-index) - var(--black-width) / 2);
+  left: calc(var(--white-index) * var(--white-width) - var(--black-width) / 2);
   width: var(--black-width);
-  height: 120px; 
+  height: var(--black-height);
   background: #111;
   color: white;
   z-index: 1;
 }
 
-.white.active { background: #8ecae6; }
-.black.active { background: #219ebc; }
+.white.active { background: var(--white-active); }
+.black.active { background: var(--black-active); }
+.key.wrong    { background: var(--wrong); }
+.note-name  { font-size: 0.7rem; font-weight: normal; opacity: 0.7; }
+.key-letter { font-size: 1.1rem; }
 
-.key.wrong { background: #e63946; }
-.lane.waiting { border-bottom-color: #ffb703; }
-
+/* Must stay last so it wins over display: flex */
 .hidden { display: none; }
-
-.lane {
-  position: relative;
-  width: calc(10 * var(--white-width));
-  height: 400px;
-  margin: 20px auto 0;
-  overflow: hidden;
-  background: #1d1d2b;
-  border-bottom: 3px solid #e63946; /* hit line */
-}
-
-.note-block {
-  position: absolute;
-  top: 0;
-  border-radius: 4px;
-  background: #ffb703;
-}

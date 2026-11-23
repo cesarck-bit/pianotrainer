@@ -129,7 +129,15 @@ KEYS.forEach((item) => {
   const element = document.createElement("div");
   element.classList.add("key", item.type);
   element.dataset.note = item.note;
-  element.textContent = item.letter;
+  const noteLabel = document.createElement("span");
+  noteLabel.classList.add("note-name");
+  noteLabel.textContent = item.note;
+
+  const letterLabel = document.createElement("span");
+  letterLabel.classList.add("key-letter");
+  letterLabel.textContent = item.letter;
+
+  element.append(noteLabel, letterLabel);
 
   if (item.type === "white") {
     whiteCount++;
