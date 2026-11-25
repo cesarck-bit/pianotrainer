@@ -2,7 +2,7 @@
 
 Play it live: https://cesarck-bit.github.io/pianotrainer/
 
-Video demo: (YouTube link coming soon)
+Video demo: https://youtu.be/lDModoSNdls
 
 A browser piano trainer. Notes fall toward a hit line and you play them on your computer keyboard. When a note reaches the line, the song waits until you press the right key. No real piano needed.
 
